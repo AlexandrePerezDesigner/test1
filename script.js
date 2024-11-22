@@ -5,7 +5,7 @@ const knob = document.getElementById('knob');
 
 let joystickActive = false;
 let gameAreaRect = document.getElementById('gameArea').getBoundingClientRect();
-let characterSpeed = 0.5;
+let characterSpeed = 2;
 let joystickCenter = { x: 0, y: 0 };
 let maxKnobDistance = joystick.offsetWidth / 2 - knob.offsetWidth / 2;
 
@@ -17,10 +17,6 @@ const randomPosition = () => {
 };
 
 randomPosition();
-
-// Initial position for character
-redCharacter.style.left = `${gameAreaRect.width / 2 - redCharacter.offsetWidth / 2}px`;
-redCharacter.style.top = `${gameAreaRect.height / 2 - redCharacter.offsetHeight / 2}px`;
 
 joystick.addEventListener('touchstart', (e) => {
     joystickActive = true;
