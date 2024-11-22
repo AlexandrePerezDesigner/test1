@@ -4,7 +4,6 @@ const joystick = document.getElementById('joystick');
 const knob = document.getElementById('knob');
 
 let joystickActive = false;
-let startX, startY;
 let gameAreaRect = document.getElementById('gameArea').getBoundingClientRect();
 let characterSpeed = 0.5;
 let joystickCenter = { x: 0, y: 0 };
@@ -28,15 +27,13 @@ joystick.addEventListener('touchstart', (e) => {
     const rect = joystick.getBoundingClientRect();
     joystickCenter.x = rect.left + rect.width / 2;
     joystickCenter.y = rect.top + rect.height / 2;
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
 });
 
 joystick.addEventListener('touchmove', (e) => {
     if (!joystickActive) return;
     const touch = e.touches[0];
-    const deltaX = touch.clientX - startX;
-    const deltaY = touch.clientY - startY;
+    const deltaX = touch.clientX - joystickCenter.x;
+    const deltaY = touch.clientY - joystickCenter.y;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
     let limitedDeltaX = deltaX;
@@ -52,8 +49,8 @@ joystick.addEventListener('touchmove', (e) => {
     knob.style.transform = `translate(${limitedDeltaX}px, ${limitedDeltaY}px)`;
 
     // Move the character
-    let newLeft = parseFloat(redCharacter.style.left || 0) + limitedDeltaX * characterSpeed * 0.05;
-    let newTop = parseFloat(redCharacter.style.top || 0) + limitedDeltaY * characterSpeed * 0.05;
+    let newLeft = parseFloat(redCharacter.style.left || 0) + (limitedDeltaX / maxKnobDistance) * characterSpeed;
+    let newTop = parseFloat(redCharacter.style.top || 0) + (limitedDeltaY / maxKnobDistance) * characterSpeed;
 
     // Keep the character within the game area
     newLeft = Math.max(0, Math.min(newLeft, gameAreaRect.width - redCharacter.offsetWidth));
@@ -67,7 +64,11 @@ joystick.addEventListener('touchmove', (e) => {
 
 joystick.addEventListener('touchend', () => {
     joystickActive = false;
+    knob.style.transition = 'transform 0.2s ease';
     knob.style.transform = 'translate(0, 0)';
+    setTimeout(() => {
+        knob.style.transition = '';
+    }, 200);
 });
 
 const checkCollision = () => {
