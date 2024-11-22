@@ -47,8 +47,7 @@ joystick.addEventListener('touchmove', (e) => {
         limitedDeltaY = Math.sin(angle) * maxKnobDistance;
     }
 
-    knob.style.left = `${limitedDeltaX + joystick.offsetWidth / 2 - knob.offsetWidth / 2}px`;
-    knob.style.top = `${limitedDeltaY + joystick.offsetHeight / 2 - knob.offsetHeight / 2}px`;
+    knob.style.transform = `translate(${limitedDeltaX}px, ${limitedDeltaY}px)`;
 
     // Move the character
     let newLeft = parseFloat(redCharacter.style.left || 0) + (limitedDeltaX / maxKnobDistance) * characterSpeed;
@@ -66,9 +65,8 @@ joystick.addEventListener('touchmove', (e) => {
 
 joystick.addEventListener('touchend', () => {
     joystickActive = false;
-    knob.style.transition = 'left 0.2s ease, top 0.2s ease';
-    knob.style.left = `${joystick.offsetWidth / 2 - knob.offsetWidth / 2}px`;
-    knob.style.top = `${joystick.offsetHeight / 2 - knob.offsetHeight / 2}px`;
+    knob.style.transition = 'transform 0.2s ease';
+    knob.style.transform = 'translate(0, 0)';
     setTimeout(() => {
         knob.style.transition = '';
     }, 200);
