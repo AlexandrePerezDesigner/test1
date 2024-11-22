@@ -19,6 +19,10 @@ const randomPosition = () => {
 
 randomPosition();
 
+// Initial position for character
+redCharacter.style.left = `${gameAreaRect.width / 2 - redCharacter.offsetWidth / 2}px`;
+redCharacter.style.top = `${gameAreaRect.height / 2 - redCharacter.offsetHeight / 2}px`;
+
 joystick.addEventListener('touchstart', (e) => {
     joystickActive = true;
     const rect = joystick.getBoundingClientRect();
@@ -31,8 +35,8 @@ joystick.addEventListener('touchstart', (e) => {
 joystick.addEventListener('touchmove', (e) => {
     if (!joystickActive) return;
     const touch = e.touches[0];
-    const deltaX = touch.clientX - joystickCenter.x;
-    const deltaY = touch.clientY - joystickCenter.y;
+    const deltaX = touch.clientX - startX;
+    const deltaY = touch.clientY - startY;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
     let limitedDeltaX = deltaX;
