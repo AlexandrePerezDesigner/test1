@@ -6,7 +6,8 @@ const knob = document.getElementById('knob');
 let joystickActive = false;
 let startX, startY;
 let gameAreaRect = document.getElementById('gameArea').getBoundingClientRect();
-let characterSpeed = 2;  // Adjust speed for smoother control
+let characterSpeed = 0.5;
+let joystickCenter = { x: 0, y: 0 };
 let maxKnobDistance = joystick.offsetWidth / 2 - knob.offsetWidth / 2;
 
 const randomPosition = () => {
@@ -20,16 +21,18 @@ randomPosition();
 
 joystick.addEventListener('touchstart', (e) => {
     joystickActive = true;
-    const touch = e.touches[0];
-    startX = touch.clientX;
-    startY = touch.clientY;
+    const rect = joystick.getBoundingClientRect();
+    joystickCenter.x = rect.left + rect.width / 2;
+    joystickCenter.y = rect.top + rect.height / 2;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
 });
 
 joystick.addEventListener('touchmove', (e) => {
     if (!joystickActive) return;
     const touch = e.touches[0];
-    const deltaX = touch.clientX - startX;
-    const deltaY = touch.clientY - startY;
+    const deltaX = touch.clientX - joystickCenter.x;
+    const deltaY = touch.clientY - joystickCenter.y;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
     let limitedDeltaX = deltaX;
@@ -54,9 +57,6 @@ joystick.addEventListener('touchmove', (e) => {
 
     redCharacter.style.left = `${newLeft}px`;
     redCharacter.style.top = `${newTop}px`;
-
-    startX = touch.clientX;
-    startY = touch.clientY;
 
     checkCollision();
 });
