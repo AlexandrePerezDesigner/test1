@@ -27,8 +27,7 @@ joystick.addEventListener('touchstart', (e) => {
     const rect = joystick.getBoundingClientRect();
     joystickCenter.x = rect.left + rect.width / 2;
     joystickCenter.y = rect.top + rect.height / 2;
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
+    e.preventDefault(); // Prevent default touch behavior
 });
 
 joystick.addEventListener('touchmove', (e) => {
