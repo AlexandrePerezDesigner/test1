@@ -6,6 +6,7 @@ const knob = document.getElementById('knob');
 let joystickActive = false;
 let knobStartX, knobStartY;
 let gameAreaRect = document.getElementById('gameArea').getBoundingClientRect();
+let characterSpeed = 1;  // Adjust speed to be slower and smoother
 
 const randomPosition = () => {
     const x = Math.random() * (gameAreaRect.width - 30);
@@ -30,8 +31,8 @@ joystick.addEventListener('touchmove', (e) => {
     const deltaY = touch.clientY - knobStartY;
 
     const characterRect = redCharacter.getBoundingClientRect();
-    let newLeft = characterRect.left + deltaX;
-    let newTop = characterRect.top + deltaY;
+    let newLeft = characterRect.left + deltaX * characterSpeed;
+    let newTop = characterRect.top + deltaY * characterSpeed;
 
     // Keep the character within the game area
     if (newLeft >= gameAreaRect.left && newLeft + characterRect.width <= gameAreaRect.right) {
