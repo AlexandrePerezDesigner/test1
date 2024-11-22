@@ -4,9 +4,10 @@ const joystick = document.getElementById('joystick');
 const knob = document.getElementById('knob');
 
 let joystickActive = false;
-let knobStartX, knobStartY;
+let knobCenterX, knobCenterY;
 let gameAreaRect = document.getElementById('gameArea').getBoundingClientRect();
-let characterSpeed = 1;  // Adjust speed to be slower and smoother
+let characterSpeed = 2;  // Adjust speed for smoother control
+let maxKnobDistance = joystick.offsetWidth / 2 - knob.offsetWidth / 2;
 
 const randomPosition = () => {
     const x = Math.random() * (gameAreaRect.width - 30);
@@ -20,19 +21,33 @@ randomPosition();
 joystick.addEventListener('touchstart', (e) => {
     joystickActive = true;
     const touch = e.touches[0];
-    knobStartX = touch.clientX;
-    knobStartY = touch.clientY;
+    knobCenterX = joystick.offsetLeft + joystick.offsetWidth / 2;
+    knobCenterY = joystick.offsetTop + joystick.offsetHeight / 2;
 });
 
 joystick.addEventListener('touchmove', (e) => {
     if (!joystickActive) return;
     const touch = e.touches[0];
-    const deltaX = touch.clientX - knobStartX;
-    const deltaY = touch.clientY - knobStartY;
+    const deltaX = touch.clientX - knobCenterX;
+    const deltaY = touch.clientY - knobCenterY;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
+    let limitedDeltaX = deltaX;
+    let limitedDeltaY = deltaY;
+
+    // Limit the knob movement within the joystick area
+    if (distance > maxKnobDistance) {
+        const angle = Math.atan2(deltaY, deltaX);
+        limitedDeltaX = Math.cos(angle) * maxKnobDistance;
+        limitedDeltaY = Math.sin(angle) * maxKnobDistance;
+    }
+
+    knob.style.transform = `translate(${limitedDeltaX}px, ${limitedDeltaY}px)`;
+
+    // Move the character
     const characterRect = redCharacter.getBoundingClientRect();
-    let newLeft = characterRect.left + deltaX * characterSpeed;
-    let newTop = characterRect.top + deltaY * characterSpeed;
+    let newLeft = characterRect.left + limitedDeltaX * characterSpeed * 0.01;
+    let newTop = characterRect.top + limitedDeltaY * characterSpeed * 0.01;
 
     // Keep the character within the game area
     if (newLeft >= gameAreaRect.left && newLeft + characterRect.width <= gameAreaRect.right) {
@@ -42,14 +57,12 @@ joystick.addEventListener('touchmove', (e) => {
         redCharacter.style.top = `${newTop - gameAreaRect.top}px`;
     }
 
-    knobStartX = touch.clientX;
-    knobStartY = touch.clientY;
-
     checkCollision();
 });
 
 joystick.addEventListener('touchend', () => {
     joystickActive = false;
+    knob.style.transform = 'translate(0, 0)';
 });
 
 const checkCollision = () => {
