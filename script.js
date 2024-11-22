@@ -4,7 +4,7 @@ const joystick = document.getElementById('joystick');
 const knob = document.getElementById('knob');
 
 let joystickActive = false;
-let knobCenterX, knobCenterY;
+let startX, startY;
 let gameAreaRect = document.getElementById('gameArea').getBoundingClientRect();
 let characterSpeed = 2;  // Adjust speed for smoother control
 let maxKnobDistance = joystick.offsetWidth / 2 - knob.offsetWidth / 2;
@@ -21,15 +21,15 @@ randomPosition();
 joystick.addEventListener('touchstart', (e) => {
     joystickActive = true;
     const touch = e.touches[0];
-    knobCenterX = joystick.offsetLeft + joystick.offsetWidth / 2;
-    knobCenterY = joystick.offsetTop + joystick.offsetHeight / 2;
+    startX = touch.clientX;
+    startY = touch.clientY;
 });
 
 joystick.addEventListener('touchmove', (e) => {
     if (!joystickActive) return;
     const touch = e.touches[0];
-    const deltaX = touch.clientX - knobCenterX;
-    const deltaY = touch.clientY - knobCenterY;
+    const deltaX = touch.clientX - startX;
+    const deltaY = touch.clientY - startY;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
     let limitedDeltaX = deltaX;
@@ -45,17 +45,18 @@ joystick.addEventListener('touchmove', (e) => {
     knob.style.transform = `translate(${limitedDeltaX}px, ${limitedDeltaY}px)`;
 
     // Move the character
-    const characterRect = redCharacter.getBoundingClientRect();
-    let newLeft = characterRect.left + limitedDeltaX * characterSpeed * 0.01;
-    let newTop = characterRect.top + limitedDeltaY * characterSpeed * 0.01;
+    let newLeft = parseFloat(redCharacter.style.left || 0) + limitedDeltaX * characterSpeed * 0.05;
+    let newTop = parseFloat(redCharacter.style.top || 0) + limitedDeltaY * characterSpeed * 0.05;
 
     // Keep the character within the game area
-    if (newLeft >= gameAreaRect.left && newLeft + characterRect.width <= gameAreaRect.right) {
-        redCharacter.style.left = `${newLeft - gameAreaRect.left}px`;
-    }
-    if (newTop >= gameAreaRect.top && newTop + characterRect.height <= gameAreaRect.bottom) {
-        redCharacter.style.top = `${newTop - gameAreaRect.top}px`;
-    }
+    newLeft = Math.max(0, Math.min(newLeft, gameAreaRect.width - redCharacter.offsetWidth));
+    newTop = Math.max(0, Math.min(newTop, gameAreaRect.height - redCharacter.offsetHeight));
+
+    redCharacter.style.left = `${newLeft}px`;
+    redCharacter.style.top = `${newTop}px`;
+
+    startX = touch.clientX;
+    startY = touch.clientY;
 
     checkCollision();
 });
