@@ -2,6 +2,16 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+// Load images
+const vespaImage = new Image();
+vespaImage.src = 'assets/vespa.png';
+
+const spaceshipImage = new Image();
+spaceshipImage.src = 'assets/arqueiro.png';
+
+const arrowImage = new Image();
+arrowImage.src = 'assets/flecha.png';
+
 // Game variables
 const spaceship = {
     x: canvas.width / 2 - 20,
@@ -13,6 +23,7 @@ const spaceship = {
 };
 
 let asteroids = [];
+let arrows = [];
 let score = 0;
 let joystick = document.getElementById('joystick');
 let knob = document.getElementById('knob');
@@ -21,6 +32,7 @@ const centerY = joystick.offsetHeight / 2;
 const maxRadius = centerX;
 
 let isDragging = false;
+let gameOver = false;
 
 // Asteroid creation
 function createAsteroid() {
@@ -29,13 +41,19 @@ function createAsteroid() {
     asteroids.push({ x, y: -40, width: 40, height: 40, speed });
 }
 
+// Arrow creation
+function shootArrow() {
+    arrows.push({ x: spaceship.x + spaceship.width / 2 - 5, y: spaceship.y, width: 10, height: 20, speed: 5 });
+}
+
 // Game loop
 function updateGame() {
+    if (gameOver) return;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw spaceship
-    ctx.fillStyle = 'lime';
-    ctx.fillRect(spaceship.x, spaceship.y, spaceship.width, spaceship.height);
+    ctx.drawImage(spaceshipImage, spaceship.x, spaceship.y, spaceship.width, spaceship.height);
 
     // Move spaceship
     spaceship.x += spaceship.speedX;
@@ -48,10 +66,9 @@ function updateGame() {
     if (spaceship.y + spaceship.height > canvas.height) spaceship.y = canvas.height - spaceship.height;
 
     // Draw and move asteroids
-    ctx.fillStyle = 'red';
     asteroids.forEach((asteroid, index) => {
         asteroid.y += asteroid.speed;
-        ctx.fillRect(asteroid.x, asteroid.y, asteroid.width, asteroid.height);
+        ctx.drawImage(vespaImage, asteroid.x, asteroid.y, asteroid.width, asteroid.height);
 
         // Collision detection
         if (
@@ -60,14 +77,28 @@ function updateGame() {
             spaceship.y < asteroid.y + asteroid.height &&
             spaceship.y + spaceship.height > asteroid.y
         ) {
-            alert('Game Over! Your score: ' + score);
-            document.location.reload();
+            gameOver = true;
+            setTimeout(() => {
+                alert('Game Over! Your score: ' + score);
+                document.location.reload();
+            }, 100);
         }
 
         // Remove asteroids that go off-screen
         if (asteroid.y > canvas.height) {
             asteroids.splice(index, 1);
             score++;
+        }
+    });
+
+    // Draw and move arrows
+    arrows.forEach((arrow, index) => {
+        arrow.y -= arrow.speed;
+        ctx.drawImage(arrowImage, arrow.x, arrow.y, arrow.width, arrow.height);
+
+        // Remove arrows that go off-screen
+        if (arrow.y + arrow.height < 0) {
+            arrows.splice(index, 1);
         }
     });
 
@@ -126,6 +157,22 @@ function resetKnob() {
     spaceship.speedX = 0;
     spaceship.speedY = 0;
 }
+
+// Add shoot button functionality
+const shootButton = document.createElement('div');
+shootButton.style.position = 'absolute';
+shootButton.style.bottom = '30px';
+shootButton.style.right = '30px';
+shootButton.style.width = '80px';
+shootButton.style.height = '80px';
+shootButton.style.background = '#09f';
+shootButton.style.border = '3px solid #0cf';
+shootButton.style.borderRadius = '50%';
+shootButton.style.opacity = '0.8';
+shootButton.style.touchAction = 'none';
+document.body.appendChild(shootButton);
+
+shootButton.addEventListener('touchstart', shootArrow);
 
 // Start game
 updateGame();
