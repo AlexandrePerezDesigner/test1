@@ -66,11 +66,11 @@ function updateGame() {
     if (spaceship.y + spaceship.height > canvas.height) spaceship.y = canvas.height - spaceship.height;
 
     // Draw and move asteroids
-    asteroids.forEach((asteroid, index) => {
+    asteroids.forEach((asteroid, asteroidIndex) => {
         asteroid.y += asteroid.speed;
         ctx.drawImage(vespaImage, asteroid.x, asteroid.y, asteroid.width, asteroid.height);
 
-        // Collision detection
+        // Collision detection with spaceship
         if (
             spaceship.x < asteroid.x + asteroid.width &&
             spaceship.x + spaceship.width > asteroid.x &&
@@ -86,20 +86,35 @@ function updateGame() {
 
         // Remove asteroids that go off-screen
         if (asteroid.y > canvas.height) {
-            asteroids.splice(index, 1);
+            asteroids.splice(asteroidIndex, 1);
             score++;
         }
     });
 
     // Draw and move arrows
-    arrows.forEach((arrow, index) => {
+    arrows.forEach((arrow, arrowIndex) => {
         arrow.y -= arrow.speed;
         ctx.drawImage(arrowImage, arrow.x, arrow.y, arrow.width, arrow.height);
 
         // Remove arrows that go off-screen
         if (arrow.y + arrow.height < 0) {
-            arrows.splice(index, 1);
+            arrows.splice(arrowIndex, 1);
         }
+
+        // Check for collision between arrow and asteroids
+        asteroids.forEach((asteroid, asteroidIndex) => {
+            if (
+                arrow.x < asteroid.x + asteroid.width &&
+                arrow.x + arrow.width > asteroid.x &&
+                arrow.y < asteroid.y + asteroid.height &&
+                arrow.y + arrow.height > asteroid.y
+            ) {
+                // Remove asteroid and arrow on collision
+                asteroids.splice(asteroidIndex, 1);
+                arrows.splice(arrowIndex, 1);
+                score++;
+            }
+        });
     });
 
     // Draw score
