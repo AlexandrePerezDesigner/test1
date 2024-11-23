@@ -1,60 +1,46 @@
 body {
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #e0e0e0;
     overflow: hidden;
+    background-color: #000;
+    color: #fff;
+    font-family: Arial, sans-serif;
 }
 
-#gameArea {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    background-color: #d3d3d3;
-    overflow: hidden;
+#gameCanvas {
+    background: #111;
+    display: block;
+    margin: 20px auto 0 auto;
+    border: 1px solid #444;
 }
 
-#redCharacter {
+#logo {
+    display: block;
+    margin: 20px auto;
+    max-width: 200px;
+}
+
+.joystick-container {
     position: absolute;
-    width: 50px;
-    height: 50px;
-    background-color: red;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-#blueSquare {
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    background-color: blue;
-    top: 10%;
-    left: 10%;
-}
-
-#joystick {
-    position: absolute;
-    bottom: 5%;
-    left: 50%;
+    bottom: 30px;
+    left: 30px;
     width: 150px;
     height: 150px;
-    background-color: rgba(0, 0, 0, 0.2);
+    background: #333;
+    border: 3px solid #555;
     border-radius: 50%;
-    transform: translateX(-50%);
     touch-action: none;
 }
 
-#knob {
+.joystick-knob {
     position: absolute;
-    width: 60px;
-    height: 60px;
-    background-color: rgba(255, 255, 255, 0.8);
+    width: 50px;
+    height: 50px;
+    background: #09f;
+    border: 3px solid #0cf;
     border-radius: 50%;
-    top: 50%;
     left: 50%;
+    top: 50%;
     transform: translate(-50%, -50%);
+    touch-action: none;
 }

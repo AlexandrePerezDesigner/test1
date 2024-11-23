@@ -1,84 +1,131 @@
-const redCharacter = document.getElementById('redCharacter');
-const blueSquare = document.getElementById('blueSquare');
-const joystick = document.getElementById('joystick');
-const knob = document.getElementById('knob');
+// Set up canvas and context
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-let joystickActive = false;
-let gameAreaRect = document.getElementById('gameArea').getBoundingClientRect();
-let characterSpeed = 2;
-let joystickCenter = { x: 0, y: 0 };
-let maxKnobDistance = joystick.offsetWidth / 2 - knob.offsetWidth / 2;
-
-const randomPosition = () => {
-    const x = Math.random() * (gameAreaRect.width - 30);
-    const y = Math.random() * (gameAreaRect.height - 30);
-    blueSquare.style.left = `${x}px`;
-    blueSquare.style.top = `${y}px`;
+// Game variables
+const spaceship = {
+    x: canvas.width / 2 - 20,
+    y: canvas.height - 60,
+    width: 40,
+    height: 40,
+    speedX: 0,
+    speedY: 0
 };
 
-randomPosition();
+let asteroids = [];
+let score = 0;
+let joystick = document.getElementById('joystick');
+let knob = document.getElementById('knob');
+const centerX = joystick.offsetWidth / 2;
+const centerY = joystick.offsetHeight / 2;
+const maxRadius = centerX;
 
+let isDragging = false;
+
+// Asteroid creation
+function createAsteroid() {
+    const x = Math.random() * (canvas.width - 40);
+    const speed = Math.random() * 2 + 1;
+    asteroids.push({ x, y: -40, width: 40, height: 40, speed });
+}
+
+// Game loop
+function updateGame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw spaceship
+    ctx.fillStyle = 'lime';
+    ctx.fillRect(spaceship.x, spaceship.y, spaceship.width, spaceship.height);
+
+    // Move spaceship
+    spaceship.x += spaceship.speedX;
+    spaceship.y += spaceship.speedY;
+
+    // Boundary checks
+    if (spaceship.x < 0) spaceship.x = 0;
+    if (spaceship.x + spaceship.width > canvas.width) spaceship.x = canvas.width - spaceship.width;
+    if (spaceship.y < 0) spaceship.y = 0;
+    if (spaceship.y + spaceship.height > canvas.height) spaceship.y = canvas.height - spaceship.height;
+
+    // Draw and move asteroids
+    ctx.fillStyle = 'red';
+    asteroids.forEach((asteroid, index) => {
+        asteroid.y += asteroid.speed;
+        ctx.fillRect(asteroid.x, asteroid.y, asteroid.width, asteroid.height);
+
+        // Collision detection
+        if (
+            spaceship.x < asteroid.x + asteroid.width &&
+            spaceship.x + spaceship.width > asteroid.x &&
+            spaceship.y < asteroid.y + asteroid.height &&
+            spaceship.y + spaceship.height > asteroid.y
+        ) {
+            alert('Game Over! Your score: ' + score);
+            document.location.reload();
+        }
+
+        // Remove asteroids that go off-screen
+        if (asteroid.y > canvas.height) {
+            asteroids.splice(index, 1);
+            score++;
+        }
+    });
+
+    // Draw score
+    ctx.fillStyle = 'white';
+    ctx.font = '20px Arial';
+    ctx.fillText('Score: ' + score, 10, 30);
+
+    requestAnimationFrame(updateGame);
+}
+
+setInterval(createAsteroid, 1000); // Create an asteroid every second
+
+// Joystick functionality
 joystick.addEventListener('touchstart', (e) => {
-    joystickActive = true;
-    const rect = joystick.getBoundingClientRect();
-    joystickCenter.x = rect.left + rect.width / 2;
-    joystickCenter.y = rect.top + rect.height / 2;
-    e.preventDefault(); // Prevent default touch behavior
+    isDragging = true;
+    updateKnob(e.touches[0]);
 });
 
 joystick.addEventListener('touchmove', (e) => {
-    if (!joystickActive) return;
-    const touch = e.touches[0];
-    const deltaX = touch.clientX - joystickCenter.x;
-    const deltaY = touch.clientY - joystickCenter.y;
-    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-    let limitedDeltaX = deltaX;
-    let limitedDeltaY = deltaY;
-
-    // Limit the knob movement within the joystick area
-    if (distance > maxKnobDistance) {
-        const angle = Math.atan2(deltaY, deltaX);
-        limitedDeltaX = Math.cos(angle) * maxKnobDistance;
-        limitedDeltaY = Math.sin(angle) * maxKnobDistance;
+    if (isDragging) {
+        updateKnob(e.touches[0]);
     }
-
-    knob.style.transform = `translate(${limitedDeltaX}px, ${limitedDeltaY}px)`;
-
-    // Move the character
-    let newLeft = parseFloat(redCharacter.style.left || 0) + (limitedDeltaX / maxKnobDistance) * characterSpeed;
-    let newTop = parseFloat(redCharacter.style.top || 0) + (limitedDeltaY / maxKnobDistance) * characterSpeed;
-
-    // Keep the character within the game area
-    newLeft = Math.max(0, Math.min(newLeft, gameAreaRect.width - redCharacter.offsetWidth));
-    newTop = Math.max(0, Math.min(newTop, gameAreaRect.height - redCharacter.offsetHeight));
-
-    redCharacter.style.left = `${newLeft}px`;
-    redCharacter.style.top = `${newTop}px`;
-
-    checkCollision();
 });
 
 joystick.addEventListener('touchend', () => {
-    joystickActive = false;
-    knob.style.transition = 'transform 0.2s ease';
-    knob.style.transform = 'translate(0, 0)';
-    setTimeout(() => {
-        knob.style.transition = '';
-    }, 200);
+    isDragging = false;
+    resetKnob();
 });
 
-const checkCollision = () => {
-    const redRect = redCharacter.getBoundingClientRect();
-    const blueRect = blueSquare.getBoundingClientRect();
+function updateKnob(touch) {
+    const rect = joystick.getBoundingClientRect();
+    const touchX = touch.clientX - rect.left;
+    const touchY = touch.clientY - rect.top;
 
-    if (
-        redRect.left < blueRect.left + blueRect.width &&
-        redRect.left + redRect.width > blueRect.left &&
-        redRect.top < blueRect.top + blueRect.height &&
-        redRect.top + redRect.height > blueRect.top
-    ) {
-        alert('You win!');
-        randomPosition();
-    }
-};
+    const deltaX = touchX - centerX;
+    const deltaY = touchY - centerY;
+    const distance = Math.min(Math.sqrt(deltaX ** 2 + deltaY ** 2), maxRadius);
+
+    const angle = Math.atan2(deltaY, deltaX);
+
+    const knobX = centerX + distance * Math.cos(angle);
+    const knobY = centerY + distance * Math.sin(angle);
+
+    knob.style.left = `${knobX}px`;
+    knob.style.top = `${knobY}px`;
+
+    // Update spaceship speed
+    spaceship.speedX = (deltaX / maxRadius) * 4;
+    spaceship.speedY = (deltaY / maxRadius) * 4;
+}
+
+function resetKnob() {
+    knob.style.left = `50%`;
+    knob.style.top = `50%`;
+    spaceship.speedX = 0;
+    spaceship.speedY = 0;
+}
+
+// Start game
+updateGame();
