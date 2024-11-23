@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Joystick</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #20232a;
+      font-family: Arial, sans-serif;
+      color: #fff;
+    }
+
+    .joystick-container {
+      position: relative;
+      width: 150px;
+      height: 150px;
+      background: #333;
+      border: 3px solid #555;
+      border-radius: 50%;
+      touch-action: none;
+    }
+
+    .joystick-knob {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background: #09f;
+      border: 3px solid #0cf;
+      border-radius: 50%;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      touch-action: none;
+    }
+
+    .info {
+      position: absolute;
+      bottom: 20px;
+      text-align: center;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="joystick-container" id="joystick">
+    <div class="joystick-knob" id="knob"></div>
+  </div>
+  <div class="info" id="info">Position: X=0, Y=0</div>
+
+  <script>
+    const joystick = document.getElementById('joystick');
+    const knob = document.getElementById('knob');
+    const info = document.getElementById('info');
+
+    const centerX = joystick.offsetWidth / 2;
+    const centerY = joystick.offsetHeight / 2;
+    const maxRadius = centerX; // Max movement radius
+
+    let isDragging = false;
+
+    joystick.addEventListener('touchstart', (e) => {
+      isDragging = true;
+      updateKnob(e.touches[0]);
+    });
+
+    joystick.addEventListener('touchmove', (e) => {
+      if (isDragging) {
+        updateKnob(e.touches[0]);
+      }
+    });
+
+    joystick.addEventListener('touchend', () => {
+      isDragging = false;
+      resetKnob();
+    });
+
+    function updateKnob(touch) {
+      const rect = joystick.getBoundingClientRect();
+      const touchX = touch.clientX - rect.left;
+      const touchY = touch.clientY - rect.top;
+
+      const deltaX = touchX - centerX;
+      const deltaY = touchY - centerY;
+      const distance = Math.min(Math.sqrt(deltaX ** 2 + deltaY ** 2), maxRadius);
+
+      const angle = Math.atan2(deltaY, deltaX);
+
+      const knobX = centerX + distance * Math.cos(angle);
+      const knobY = centerY + distance * Math.sin(angle);
+
+      knob.style.left = `${knobX}px`;
+      knob.style.top = `${knobY}px`;
+
+      const normalizedX = Math.round((deltaX / maxRadius) * 100);
+      const normalizedY = Math.round((deltaY / maxRadius) * 100);
+
+      info.textContent = `Position: X=${normalizedX}, Y=${normalizedY}`;
+    }
+
+    function resetKnob() {
+      knob.style.left = `50%`;
+      knob.style.top = `50%`;
+      info.textContent = `Position: X=0, Y=0`;
+    }
+  </script>
+</body>
+</html>
