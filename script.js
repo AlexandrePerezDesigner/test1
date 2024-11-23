@@ -34,6 +34,11 @@ const maxRadius = centerX;
 let isDragging = false;
 let gameOver = false;
 
+// Resize joystick
+joystick.style.width = '120px';
+joystick.style.height = '120px';
+joystick.style.opacity = '0.7';
+
 // Asteroid creation
 function createAsteroid() {
     const x = Math.random() * (canvas.width - 40);
